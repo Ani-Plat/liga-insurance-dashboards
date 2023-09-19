@@ -2,7 +2,6 @@ import streamlit as st
 import pandas as pd
 import matplotlib.pyplot as plt
 import matplotlib
-matplotlib.use('Agg')
 import seaborn as sns
 import plotly.express as px
 import altair as alt
@@ -212,92 +211,6 @@ def main():
 
     st.markdown('---')
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # chart = chart.mark_point().encode(
-    #     tooltip=['scores', 'proportion', 'Dataset']
-    # )
-
-    # line = chart.mark_line()
-    #
-    # chart = (chart + line).interactive()
-
-
-
-    # st.subheader('Proportion Comparisoon: Liga vs Market')
-    # merged_data = rgs.merge(chrgs, on='scores')
-    #
-    # chart = alt.Chart(merged_data).mark_line().encode(
-    #     x='scores',
-    #     y=alt.Y('proportion_x', axis=alt.Axis(title='Proportion')),
-    #     color=alt.value('orange'),
-    #     tooltip=['scores', 'proportion_x']
-    # ) + alt.Chart(merged_data).mark_line().encode(
-    #     x='scores',
-    #     y=alt.Y('proportion_y', axis=alt.Axis(title='Proportion')),
-    #     color=alt.value('green'),
-    #     tooltip=['scores', 'proportion_y']
-    # )
-
-
-
-    # merged_df = pd.merge(rgs, chrgs, on='scores')
-    # plt.figure(figsize=(10, 6))
-    # plt.plot(merged_df['scores'], merged_df['proportion_x'], label='Liga', marker='o')
-    # plt.plot(merged_df['scores'], merged_df['proportion_y'], label='Market', marker='o')
-    # plt.xlabel('Score')
-    # plt.ylabel('Proportion')
-    # plt.title('Proportion Comparison Between Datasets')
-    # plt.legend()
-    #
-    # st.pyplot(plt)
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-    # menu = ["Home", "EDA", "ML", "About"]
-    # choice = st.sidebar.selectbox("Menu", menu)
-    #
-    # if choice == "Home":
-    #     st.subheader("Home")
-    # elif choice == "EDA":
-    #     run_eda_app()
-    # elif choice == "ML":
-    #     run_ml_app()
-    # else:
-    #     st.subheader("About")
-    #
-    #
 
 if __name__ == '__main__':
        main()
