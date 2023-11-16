@@ -9,7 +9,6 @@ import numpy as np
 
 
 
-
 def main():
     st.title("Liga Insurance Visualization :oncoming_automobile:")
 
@@ -17,10 +16,9 @@ def main():
     st.sidebar.markdown(f"{logo}<h1></h1>", unsafe_allow_html=True)
 
     # Load Data
-    df = pd.read_csv(r"C:\Users\Adrak3\PycharmProjects\streamlit_project\multi_app\data\main_data_semi_preprocessed.csv")
-    rgs = pd.read_csv(r"C:\Users\Adrak3\PycharmProjects\streamlit_project\multi_app\data\grouped_rgs.csv")
-    chrgs = pd.read_csv(r"C:\Users\Adrak3\PycharmProjects\streamlit_project\multi_app\data\grouped_chrgs.csv")
-
+    df = pd.read_csv(r"C:\Users\Admin\PycharmProjects\streamlit_project\multi_app\data\sample_forvisuals_semiprocessed.csv")
+    liga = pd.read_csv(r"C:\Users\Admin\PycharmProjects\streamlit_project\multi_app\data\grouped_liga.csv")
+    market = pd.read_csv(r"C:\Users\Admin\PycharmProjects\streamlit_project\multi_app\data\grouped_market.csv")
 
 
     st.header("Plots :bar_chart:")
@@ -39,46 +37,53 @@ def main():
                 """,
                 unsafe_allow_html=True,
             )
-    st.subheader("Data Comparison")
 
-    selected_bm_class = st.selectbox('Select BM class', df['bmClass'].unique())
-    filtered_df = df[df['bmClass'] == selected_bm_class]
-
-    score_counts = filtered_df['scores'].value_counts().reset_index()
-    score_counts.columns = ['scores', 'count']
-
-    total_count = len(filtered_df)
-    score_counts['percentage'] = (score_counts['count'] / total_count) * 100
 
     # Plot 1
-    fig = px.bar(score_counts, x='scores', y='percentage', color='percentage',
-                 title=f'Proportion of Scores for BM classes: {selected_bm_class}',
-                 labels={'percentage': 'Percent %', 'scores': 'Scores'},
-                 height=600,
-                 text='scores')
-    fig.update_layout(barmode='stack', xaxis_tickangle=-45)
+    st.subheader("Data Comparison")
 
-    yticks = score_counts['scores'].tolist()
-    plt.yticks(range(len(yticks)), yticks)
+    class_a_selected = st.selectbox('Select BM Class A:', df['bmClass'].unique())
+    class_b_selected = st.selectbox('Select BM Class B:', df['bmClass'].unique())
 
-    st.plotly_chart(fig)
+    filtered_df = df[(df['bmClass'] == class_a_selected) | (df['bmClass'] == class_b_selected)]
+
+    proportion_df = filtered_df.groupby('bmClass')['scores'].value_counts(normalize=True).reset_index(name='Proportion')
+    proportion_df['Proportion'] *= 100
+
+    fig, ax = plt.subplots(figsize=(8, 6))
+
+    for label, data in proportion_df.groupby('bmClass'):
+        ax.bar(data['scores'], data['Proportion'], label=label, alpha=0.6)
+
+    ax.set_xlabel('Scores')
+    ax.set_ylabel('Proportion')
+
+
+
+    ax.set_title('Proportion of Scores for Selected BM Classes')
+    ax.legend()
+
+    st.pyplot(fig)
 
     st.markdown('---')
 
 
-
     # Plot 2
 
-    rgs['percentage'] = (rgs["Number of claims"] / rgs['Number of claims'].sum()) * 100
-    fig2 = px.bar(rgs, x='scores', y='Number of claims', color_discrete_sequence=['orange'],
+
+    total = liga['Number of claims'] + market['Number of claims']
+
+    liga['percentage'] = (liga["Number of claims"] / total) * 100
+
+    fig2 = px.bar(liga, x='scores', y='Number of claims', color_discrete_sequence=['orange'],
                  title=f"Claims by Scores: Liga vs Market",
                  labels={'Number of claims': 'Number of claims', 'scores': 'Scores'},
                  height=600)
 
 
-    chrgs['percentage'] = (chrgs['Number of claims'] / chrgs['Number of claims'].sum()) * 100
+    market['percentage'] = (market['Number of claims'] / total) * 100
 
-    fig3 = px.bar(chrgs, x='scores', y='Number of claims', color_discrete_sequence=['green'],
+    fig3 = px.bar(market, x='scores', y='Number of claims', color_discrete_sequence=['green'],
                   title=f"Claims by Scores: Liga vs Market",
                   labels={'Number of claims': 'Number of claims', 'scores': 'Scores'},
                   height=600,
@@ -87,12 +92,12 @@ def main():
 
 
     fig2.update_traces(marker_opacity=0.7, marker_line_width=0,
-                       hovertemplate='%{y} <br>%{customdata:.2f}% of total')
-    fig2.update_traces(customdata=rgs['percentage'])
+                       hovertemplate='%{y} <br>%{customdata:.2f}% of total score')
+    fig2.update_traces(customdata=liga['percentage'])
 
     fig3.update_traces(marker_opacity=0.7, marker_line_width=0,
-                       hovertemplate='%{y} <br>%{customdata:.2f}% of total')
-    fig3.update_traces(customdata=chrgs['percentage'])
+                       hovertemplate='%{y} <br>%{customdata:.2f}% of total score')
+    fig3.update_traces(customdata=market['percentage'])
 
 
     fig2.add_traces(fig3.data)
@@ -111,27 +116,31 @@ def main():
 
     st.plotly_chart(fig2)
 
-    rgs['percentage2'] = (rgs["Number of contracts"] / rgs['Number of contracts'].sum()) * 100
-    fig2b = px.bar(rgs, x='scores', y='Number of contracts', color_discrete_sequence=['orange'],
+
+
+    total2 = liga['Number of contracts'] + market['Number of contracts']
+
+    liga['percentage2'] = (liga["Number of contracts"] / total2) * 100
+    fig2b = px.bar(liga, x='scores', y='Number of contracts', color_discrete_sequence=['orange'],
                   title=f"Contracts by Scores: Liga vs Market",
                   labels={'Contracts': 'Contracts', 'scores': 'Scores'},
                   height=600)
 
-    chrgs['percentage2'] = (chrgs['Number of contracts'] / chrgs['Number of contracts'].sum()) * 100
+    market['percentage2'] = (market['Number of contracts'] / total2) * 100
 
-    fig3b = px.bar(chrgs, x='scores', y='Number of contracts', color_discrete_sequence=['green'],
+    fig3b = px.bar(market, x='scores', y='Number of contracts', color_discrete_sequence=['green'],
                   title=f"Contracts by Scores: Liga vs Market",
                   labels={'Contracts': 'Contracts', 'scores': 'Scores'},
                   height=600,
                   text='scores')
 
     fig2b.update_traces(marker_opacity=0.7, marker_line_width=0,
-                       hovertemplate='%{y} <br>%{customdata:.2f}% of total')
-    fig2b.update_traces(customdata=rgs['percentage'])
+                       hovertemplate='%{y} <br>%{customdata:.2f}% of total score')
+    fig2b.update_traces(customdata=liga['percentage2'])
 
     fig3b.update_traces(marker_opacity=0.7, marker_line_width=0,
-                       hovertemplate='%{y} <br>%{customdata:.2f}% of total')
-    fig3b.update_traces(customdata=chrgs['percentage'])
+                       hovertemplate='%{y} <br>%{customdata:.2f}% of total score')
+    fig3b.update_traces(customdata=market['percentage2'])
 
     fig2b.add_traces(fig3b.data)
 
@@ -152,29 +161,37 @@ def main():
     st.markdown('---')
 
 
+
     # Plot 3
-    rgs_data = pd.read_csv(r"C:\Users\Adrak3\PycharmProjects\streamlit_project\multi_app\data\rgs.csv")
-    chrgs_data = pd.read_csv(r"C:\Users\Adrak3\PycharmProjects\streamlit_project\multi_app\data\chrgs.csv")
-    mean_score1 = rgs_data['scores'].mean()
-    mean_score2 = chrgs_data['scores'].mean()
+    liga_data = pd.read_csv(r"C:\Users\Admin\PycharmProjects\streamlit_project\multi_app\data\liga.csv")
+    market_data = pd.read_csv(r"C:\Users\Admin\PycharmProjects\streamlit_project\multi_app\data\market.csv")
+    mean_score1 = liga_data['scores'].mean()
+    mean_score2 = market_data['scores'].mean()
+    median_score1 = liga_data['scores'].median()
+    median_score2 = market_data['scores'].median()
 
     custom_palette = {"Liga": "orange", "Market": "green"}
 
 
     data = {
-        'Dataset': ['Liga'] * len(rgs_data) + ['Market'] * len(chrgs_data),
-        'Scores': list(rgs_data['scores']) + list(chrgs_data['scores'])
+        'Dataset': ['Liga'] * len(liga_data) + ['Market'] * len(market_data),
+        'Scores': list(liga_data['scores']) + list(market_data['scores'])
     }
 
     df = pd.DataFrame(data)
     plt.figure(figsize=(8, 6))
     ax = sns.boxplot(x='Dataset', y='Scores', data=df,  palette=custom_palette)
-    plt.title('Mean Scores of Liga vs Market', loc='left', fontsize=10)
+    plt.title('Mean & Median Scores of Liga vs Market', loc='left', fontsize=10)
     plt.xlabel('Dataset')
     plt.ylabel('Scores')
 
     ax.text(0, mean_score1, f"Mean: {mean_score1:.2f}", ha='center', va='bottom')
     ax.text(1, mean_score2, f"Mean: {mean_score2:.2f}", ha='center', va='bottom')
+    ax.text(0, median_score1, f"Median: {median_score1:.2f}", ha='center', va='top', color='black', fontsize=10)
+    ax.text(1, median_score2, f"Median: {median_score2:.2f}", ha='center', va='bottom', color='black', fontsize=10)
+
+
+
 
     st.pyplot(plt)
 
@@ -185,31 +202,89 @@ def main():
 
     st.subheader('Proportion by Scores: Liga vs Market')
 
-    chart = alt.Chart(
-        pd.concat([rgs.assign(Dataset="Liga"), chrgs.assign(Dataset="Market")])
+    liga_check = st.checkbox("Liga")
+    market_check = st.checkbox("Market without Liga")
+
+    if liga_check:
+        chart = alt.Chart(
+            pd.concat([liga.assign(Dataset="Liga")])
+        )
+
+        circles = chart.mark_point(size=50).encode(
+                x='scores',
+                y='proportion',
+                color=alt.Color('Dataset', scale=alt.Scale(range=['orange'])),
+                tooltip=['scores', 'proportion', 'Dataset']
+            )
+
+        lines = chart.mark_line().encode(
+            x='scores',
+            y='proportion',
+            color=alt.Color('Dataset', scale=alt.Scale(range=['orange']))
+        )
+
+        chart = (circles + lines).properties(
+            width=600,
+            height=400
+        ).interactive()
+
+    if market_check:
+        chart = alt.Chart(
+        pd.concat([market.assign(Dataset="Market without Liga")])
     )
 
-    circles = chart.mark_point(size=50).encode(
-        x='scores',
-        y='proportion',
-        color=alt.Color('Dataset', scale=alt.Scale(range=['orange', 'green'])),
-        tooltip=['scores', 'proportion', 'Dataset']
-    )
+        circles = chart.mark_point(size=50).encode(
+            x='scores',
+            y='proportion',
+            color=alt.Color('Dataset', scale=alt.Scale(range=['green'])),
+            tooltip=['scores', 'proportion', 'Dataset']
+        )
 
-    lines = chart.mark_line().encode(
-        x='scores',
-        y='proportion',
-        color=alt.Color('Dataset', scale=alt.Scale(range=['orange', 'green']))
-    )
+        lines = chart.mark_line().encode(
+            x='scores',
+            y='proportion',
+            color=alt.Color('Dataset', scale=alt.Scale(range=['green']))
+        )
 
-    chart = (circles + lines).properties(
-        width=600,
-        height=400
-    ).interactive()
+        chart = (circles + lines).properties(
+            width=600,
+            height=400
+        ).interactive()
 
-    st.altair_chart(chart, use_container_width=True)
+    if liga_check and market_check:
+        chart = alt.Chart(
+            pd.concat([liga.assign(Dataset="Liga"), market.assign(Dataset="Market without Liga")])
+        )
+
+        circles = chart.mark_point(size=50).encode(
+            x='scores',
+            y='proportion',
+            color=alt.Color('Dataset', scale=alt.Scale(range=['orange', 'green'])),
+            tooltip=['scores', 'proportion', 'Dataset']
+        )
+
+        lines = chart.mark_line().encode(
+            x='scores',
+            y='proportion',
+            color=alt.Color('Dataset', scale=alt.Scale(range=['orange', 'green']))
+        )
+
+        chart = (circles + lines).properties(
+            width=600,
+            height=400
+        ).interactive()
+
+    if not liga_check and not market_check:
+        st.warning("**Please select a dataset**")
+
+    else:
+        pass
+        st.altair_chart(chart, use_container_width=True)
+
+
 
     st.markdown('---')
+
 
 
 if __name__ == '__main__':
